@@ -52,8 +52,10 @@ function App() {
       return res.json();
     }).then(function(val){
       changeTitle(val.spreadsheetId)
+      writeContents(val.spreadsheetId)
       console.log(val);
       console.log(val.spreadsheetId);
+      alert(val.spreadsheetUrl)
     });
     function changeTitle(SPREADSHEETID) {
       var title = fileName
@@ -89,6 +91,33 @@ function App() {
         //var findReplaceResponse = response.result.replies[1].findReplace;
         //console.log(`${findReplaceResponse.occurrencesChanged} replacements made.`);
       });
+    }
+
+    function writeContents(spreadsheetId) {
+      var values = [
+        [
+          '기업명',	'담당자연락처',	'담당자',	'보내시는분',	'받으시는분',	'주소',	'연락처',	'종류',	'배송방식'
+        ],
+        [
+          '박훈',	'010-0000-0000',	'홍길동',	'삼화회계법인 남궁진',	'삼화회계법인',	'서울시 강남구 봉은사로 407, 6층 (삼성동, 삼화빌딩)', 	'010-9937-7930',	'2본CF',	'직배'
+        ],
+        [
+          '박훈',	'010-0000-0000',	'홍길동',	'삼화회계법인 남궁진',	'심을두 전무',	'서울특별시 송파구 마천로16 한성나이스빌 202호', 	'010-7101-1496',	'4본CWBM',	'직배'
+        ],
+        ];
+        var body = {
+          values: values
+        };
+        var row_length = values.length
+        gapi.client.sheets.spreadsheets.values.update({
+          spreadsheetId: spreadsheetId,
+          range: 'A1'+':I'+row_length,
+          valueInputOption: 'RAW',
+          resource: body
+        }).then((response) => {
+          var result = response.result;
+          console.log(`${result.updatedCells} cells updated.`);
+        });
     }
 
   }
