@@ -19,6 +19,7 @@ function App() {
         apiKey: API_KEY,
         clientId: CLIENT_ID,
         scope: SCOPES,
+        'discoveryDocs': ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
       })
     };
     gapi.load('client:auth2', start);
@@ -41,19 +42,54 @@ function App() {
   function createFile(tag) {
     
     var accessToken = gapi.auth.getToken().access_token;
-    var fileName = tag+ " Notes " + getDateString()+' '+ getTimeString();
-
-    alert(JSON.stringify(accessToken))
+    var fileName = tag+ " " + getDateString()+' '+ getTimeString();
+    
     fetch('https://sheets.googleapis.com/v4/spreadsheets',{
       method:"POST",
       headers: new Headers({'Authorization': 'Bearer '+ accessToken})
+      
     }).then((res) =>{
       return res.json();
     }).then(function(val){
+      changeTitle(val.spreadsheetId)
       console.log(val);
-      console.log(val.docementId);
+      console.log(val.spreadsheetId);
     });
-    
+    function changeTitle(SPREADSHEETID) {
+      var title = fileName
+      //var replacement = 'hey'
+      var spreadsheetId= SPREADSHEETID
+      var requests = [];
+      // Change the spreadsheet's title.
+      requests.push({
+        updateSpreadsheetProperties: {
+          properties: {
+            title: title
+          },
+          fields: 'title'
+        }
+      });
+
+      // Find and replace text.
+      // requests.push({
+      //   findReplace: {
+      //     find: find,
+      //     replacement: replacement,
+      //     allSheets: true
+      //   }
+      // });
+      // Add additional requests (operations) ...
+
+      var batchUpdateRequest = {requests: requests}
+
+      gapi.client.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: spreadsheetId,
+        resource: batchUpdateRequest
+      }).then((response) => {
+        //var findReplaceResponse = response.result.replies[1].findReplace;
+        //console.log(`${findReplaceResponse.occurrencesChanged} replacements made.`);
+      });
+    }
 
   }
     
@@ -62,9 +98,10 @@ function App() {
     <div className="App">
       <LoginButton/>
       <LogoutButton/>
-      <button onClick = {()=>createFile('Document')}>Create Documents</button>
+      <button onClick = {()=>createFile('New Spreadsheet')}>Create Documents</button>
     </div>
   );
 }
 
 export default App;
+
